@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Evaluación Interactiva - Redes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f9f3e6 0%, #ffe6e6 100%);
+            font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            padding: 1rem;
+            color: #4a4a6a;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #fffdf8;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(180, 200, 220, 0.5);
+            padding: 1.5rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f3d9dc;
+            padding-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #9b8c7c, #c9a9a9);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .sub {
+            color: #a9a9c0;
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+
+        .instructions {
+            background: #fdf4e8;
+            padding: 0.8rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #b5d8ff;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #5a5a7a;
+        }
+
+        .score-bar {
+            background: #e8f0fe;
+            border-radius: 2rem;
+            padding: 0.6rem 1rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            border: 1px solid #d4e0f0;
+            margin-bottom: 1.5rem;
+            color: #6a5a8a;
+        }
+
+        .question-card {
+            background: #ffffff;
+            border-radius: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #f0e0d0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .question-text {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+            color: #5c5c7c;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .q-num {
+            background: #d9e6f5;
+            border-radius: 30px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            color: #6a6a8a;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem 0.7rem;
+            border-radius: 1rem;
+            transition: background 0.15s;
+            background: #fefaf5;
+            border: 1px solid #eeddcc;
+        }
+
+        .option:hover {
+            background: #fff0e6;
+            border-color: #d4b8a8;
+        }
+
+        input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.1rem;
+            height: 1.1rem;
+            border: 2px solid #b0aac8;
+            border-radius: 50%;
+            margin-top: 0.1rem;
+            cursor: pointer;
+            background: #ffffff;
+            transition: 0.1s;
+            flex-shrink: 0;
+        }
+
+        input[type="radio"]:checked {
+            background-color: #8a7ab0;
+            border-color: #8a7ab0;
+            box-shadow: inset 0 0 0 3px #ffffff;
+        }
+
+        .option label {
+            flex: 1;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            cursor: pointer;
+            color: #5e5e7e;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .feedback {
+            margin-top: 0.8rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 0.8rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            background: #fcf7f0;
+            border-left: 4px solid;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .feedback.correct {
+            border-left-color: #9bc4a0;
+            background: #f0f9f0;
+        }
+
+        .feedback.incorrect {
+            border-left-color: #e6b8b8;
+            background: #fff5f5;
+        }
+
+        .feedback-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .feedback span:last-child {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        .btn {
+            border: none;
+            background: #e0d6e8;
+            color: #6a5a8a;
+            font-weight: 600;
+            padding: 0.7rem 1.5rem;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background: #c5e0d4;
+            color: #5a6e5a;
+        }
+
+        .btn-primary:hover {
+            background: #b0d4c4;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: #f0dcd8;
+            color: #8a6a6a;
+        }
+
+        .btn-secondary:hover {
+            background: #e8cec8;
+        }
+
+        .btn-success {
+            background: #d4e0f0;
+            color: #6a6a8a;
+        }
+        .btn-success:hover {
+            background: #c0d0e8;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1rem;
+            color: #b0aac0;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 0.5rem;
+            }
+            .quiz-container {
+                padding: 1rem;
+                border-radius: 1.5rem;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .question-card {
+                padding: 0.8rem 1rem;
+            }
+            .option {
+                padding: 0.4rem 0.6rem;
+            }
+            .option label {
+                font-size: 0.85rem;
+            }
+            .feedback {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.7rem;
+            }
+            .score-bar {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .option label {
+                font-size: 0.8rem;
+            }
+            .question-text {
+                font-size: 0.9rem;
+            }
+            .instructions {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container">
+    <div class="header">
+        <h1>🌐 EVALUACIÓN INTERACTIVA REDES</h1>
+        <div class="sub">Fibra óptica · IoT · Seguridad · Computación cuántica</div>
+    </div>
+    <div class="instructions">
+        📘 <strong>Instrucciones:</strong> Selecciona la opción correcta para cada pregunta. Al elegir una respuesta, recibirás retroalimentación inmediata (✅ correcta / ❌ incorrecta) con su justificación. El contador de aciertos se actualiza automáticamente. Al final, usa el botón <strong>"📊 Ver total de aciertos"</strong> para conocer tu puntuación final.
+    </div>
+
+    <div class="score-bar" id="scoreDisplay">🎯 Aciertos: 0 / 20</div>
+
+    <div id="quizContainer"></div>
+
+    <div class="button-group">
+        <button id="resetBtn" class="btn btn-secondary">⟳ Reiniciar cuestionario</button>
+        <button id="finalScoreBtn" class="btn btn-success">📊 Ver total de aciertos</button>
+    </div>
+
+    <footer>📌 Basado en contenidos de redes: atenuación, conectores, OTDR, IoT, VLAN, seguridad cuántica y más.</footer>
+</div>
+
+<script>
+    // Preguntas, opciones, respuesta correcta y justificación completa
+    const questions = [
+        {
+            text: "¿Cuál es la principal consecuencia de la atenuación en una red de fibra óptica?",
+            options: [
+                { value: "a", text: "El bloqueo total de la luz en la interfaz." },
+                { value: "b", text: "La reducción del alcance y la velocidad de la señal." },
+                { value: "c", text: "El aumento de la tasa de datos a larga distancia." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. La pérdida de potencia a lo largo de la fibra limita qué tan lejos y qué tan rápido llega la información. A) es causada por conectores sucios; C) es falso, la atenuación degrada la señal."
+        },
+        {
+            text: "Según las fuentes, ¿qué porcentaje de las fallas operativas en fibra óptica proviene de conectores sucios o dañados?",
+            options: [
+                { value: "a", text: "Hasta un 20%." },
+                { value: "b", text: "Exactamente el 50%." },
+                { value: "c", text: "Hasta un 80%." }
+            ],
+            correct: "c",
+            explanation: "Correcta: C. La suciedad en la interfaz es la causa principal de la mayoría de los problemas de red, hasta un 80% según las fuentes."
+        },
+        {
+            text: "¿Cuál es la regla práctica recomendada para el radio de curvatura de un cable de fibra óptica?",
+            options: [
+                { value: "a", text: "No exceder 5 veces el diámetro del cable." },
+                { value: "b", text: "No exceder aproximadamente 10 veces el diámetro del cable." },
+                { value: "c", text: "No existe un radio mínimo si el cable tiene protección mecánica." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Es la norma recomendada para evitar pérdidas por curvatura y roturas internas. A) es demasiado pequeño; C) es falso, todas las fibras tienen un radio mínimo."
+        },
+        {
+            text: "¿Qué herramienta se debe utilizar para localizar específicamente una pérdida puntual o un empalme defectuoso en un tramo de fibra?",
+            options: [
+                { value: "a", text: "Microscopio para conectores." },
+                { value: "b", text: "OTDR (Reflectómetro óptico en el dominio del tiempo)." },
+                { value: "c", text: "Medidor de potencia óptica." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. OTDR es la herramienta clave para localizar fallas y medir pérdidas en tramos específicos. A) inspecciona limpieza; C) mide potencia total sin localizar."
+        },
+        {
+            text: "¿Cuál es la principal diferencia operativa entre la fibra monomodo y la multimodo?",
+            options: [
+                { value: "a", text: "La monomodo se usa para distancias cortas y la multimodo para largas." },
+                { value: "b", text: "La monomodo permite baja dispersión a larga distancia; la multimodo es para enlaces locales." },
+                { value: "c", text: "La fibra multimodo no tiene revestimiento, solo núcleo." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Las características del núcleo definen su uso según el alcance. A) es al revés; C) es falso, ambas tienen núcleo y revestimiento."
+        },
+        {
+            text: "En el contexto de la física del fotón, ¿qué explica el concepto del fotón como partícula?",
+            options: [
+                { value: "a", text: "La interferencia y la dispersión del pulso." },
+                { value: "b", text: "El confinamiento por reflexión total interna." },
+                { value: "c", text: "Fenómenos como el efecto fotoeléctrico." }
+            ],
+            correct: "c",
+            explanation: "Correcta: C. El fotón como cuanto de energía permite entender la interacción con detectores (efecto fotoeléctrico). A) son propiedades ondulatorias; B) es óptica geométrica."
+        },
+        {
+            text: "¿Qué componente de red IoT escolar tiene como función principal proveer conectividad Wi-Fi a sensores y cámaras?",
+            options: [
+                { value: "a", text: "Switch PoE." },
+                { value: "b", text: "Punto de Acceso (AP)." },
+                { value: "c", text: "Gateway IoT." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Los APs son los encargados de la interfaz inalámbrica para los dispositivos IoT. A) conecta y alimenta APs; C) actúa como enlace entre redes."
+        },
+        {
+            text: "¿Para qué se recomienda el uso de un 'Controlador inalámbrico' en un campus escolar?",
+            options: [
+                { value: "a", text: "Para alimentar cámaras a través del cable de red." },
+                { value: "b", text: "Para la gestión centralizada cuando hay más de 5 APs." },
+                { value: "c", text: "Para realizar el diagnóstico físico de la fibra óptica." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Permite unificar políticas en despliegues con múltiples puntos de acceso. A) es función de PoE; C) usa OTDR."
+        },
+        {
+            text: "En la seguridad de red IoT, ¿qué significa implementar segmentación mediante VLAN?",
+            options: [
+                { value: "a", text: "Usar una misma red para administrativos, estudiantes y dispositivos IoT." },
+                { value: "b", text: "Separar la red IoT de la administrativa y de estudiantes." },
+                { value: "c", text: "Eliminar el uso de contraseñas en dispositivos personales." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. El aislamiento evita que una falla o ataque en IoT afecte recursos internos críticos. A) vulnera la seguridad; C) no es segmentación."
+        },
+        {
+            text: "¿Cuál es el método de autenticación recomendado para dispositivos IoT críticos en la red?",
+            options: [
+                { value: "a", text: "WPA2 con una clave compartida simple." },
+                { value: "b", text: "802.1X con certificados." },
+                { value: "c", text: "Desactivar el cifrado para mejorar la velocidad (QoS)." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Es la práctica recomendada para asegurar que solo dispositivos autorizados accedan. A) es menos seguro; C) sacrifica seguridad."
+        },
+        {
+            text: "¿Qué función cumple el sistema WIDS/WIPS en una red inalámbrica?",
+            options: [
+                { value: "a", text: "Aumentar la velocidad de descarga de las cámaras." },
+                { value: "b", text: "Detectar puntos de acceso no autorizados (rogue APs) y ataques de jamming." },
+                { value: "c", text: "Asignar direcciones IP mediante NAT." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Es una medida de control de acceso y monitoreo de seguridad. A) no es su función; C) es función del router."
+        },
+        {
+            text: "¿Cuál es el primer paso recomendado en el proceso de implementación de una red IoT?",
+            options: [
+                { value: "a", text: "Selección de hardware." },
+                { value: "b", text: "Diagnóstico y planificación (mapear aulas y puntos críticos)." },
+                { value: "c", text: "Configuración de reglas de firewall." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Es la base para un diseño lógico y físico adecuado. A) y C) vienen después."
+        },
+        {
+            text: "¿Qué dispositivo es mencionado como una plataforma común para IoT Wi-Fi Industrial?",
+            options: [
+                { value: "a", text: "Switch PoE Industrial." },
+                { value: "b", text: "ESP32." },
+                { value: "c", text: "OTDR Satelital." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. ESP32 integra Wi-Fi y Bluetooth para sensores. A) es parte de la red; C) es herramienta de medición."
+        },
+        {
+            text: "Según el temario del tercer trimestre, ¿por qué la computación cuántica representa una amenaza para la seguridad actual?",
+            options: [
+                { value: "a", text: "Porque puede aumentar la atenuación de la fibra óptica." },
+                { value: "b", text: "Porque el algoritmo de Shor puede romper algoritmos como RSA y ECC." },
+                { value: "c", text: "Porque requiere el uso obligatorio de cables Cat6." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. La amenaza se basa en la capacidad de descifrar comunicaciones protegidas por métodos actuales. A) es físico; C) no es relevante."
+        },
+        {
+            text: "¿En qué consiste el riesgo conocido como 'harvest now, decrypt later'?",
+            options: [
+                { value: "a", text: "En recolectar datos sensibles hoy para descifrarlos en el futuro con computadoras cuánticas." },
+                { value: "b", text: "En guardar componentes de fibra óptica usados para reciclarlos después." },
+                { value: "c", text: "En apagar los servidores durante la noche para ahorrar energía." }
+            ],
+            correct: "a",
+            explanation: "Correcta: A. Es el motivo por el cual se debe migrar a PQC lo antes posible. B) y C) no se relacionan con el riesgo cuántico."
+        },
+        {
+            text: "¿Qué tecnología permite la distribución de claves con seguridad física basada en principios cuánticos (no-cloning)?",
+            options: [
+                { value: "a", text: "PQC (Criptografía Poscuántica)." },
+                { value: "b", text: "QKD (Distribución de Claves Cuánticas)." },
+                { value: "c", text: "SD-WAN." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. QKD utiliza la mecánica cuántica para garantizar que las claves no sean interceptadas sin ser detectadas. A) son algoritmos matemáticos; C) es arquitectura de red."
+        },
+        {
+            text: "¿Cuál es una recomendación de hardware seguro para estaciones terrestres en comunicaciones satelitales?",
+            options: [
+                { value: "a", text: "Uso de repetidores EDFA." },
+                { value: "b", text: "Uso de HSM/TPM (Módulos de Seguridad de Hardware)." },
+                { value: "c", text: "Instalación de sensores de vibración." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Proveen una capa de hardware seguro para el manejo de identidades y claves. A) es para fibra; C) es para mantenimiento predictivo."
+        },
+        {
+            text: "En el mantenimiento de fibra óptica, ¿qué se recomienda como 'primera acción' ante una falla?",
+            options: [
+                { value: "a", text: "Reemplazar todo el tramo de fibra." },
+                { value: "b", text: "Limpiar los conectores con alcohol isopropílico y paños sin pelusa." },
+                { value: "c", text: "Realizar un empalme por fusión de inmediato." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. La suciedad causa la mayoría de los problemas y es lo más sencillo de corregir. A) es costoso sin diagnóstico; C) se hace solo si hay rotura."
+        },
+        {
+            text: "¿Cuál es el beneficio del mantenimiento predictivo en el entorno Wi-Fi Industrial?",
+            options: [
+                { value: "a", text: "Evitar fallas antes de que ocurran mediante el análisis de sensores (vibración, temperatura)." },
+                { value: "b", text: "Reducir la velocidad de los motores para ahorrar luz." },
+                { value: "c", text: "Eliminar la necesidad de usar firewalls." }
+            ],
+            correct: "a",
+            explanation: "Correcta: A. Permite digitalizar procesos y optimizar operaciones. B) no es el foco; C) es falso, no sustituye seguridad."
+        },
+        {
+            text: "¿Qué arquitectura operativa se recomienda integrar con NGFW y SD-WAN para seguridad satelital avanzada?",
+            options: [
+                { value: "a", text: "Redes abiertas sin segmentación." },
+                { value: "b", text: "Zero Trust (Confianza Cero)." },
+                { value: "c", text: "Solo backhaul inalámbrico tipo mesh." }
+            ],
+            correct: "b",
+            explanation: "Correcta: B. Zero Trust es parte de la arquitectura operativa necesaria para proteger infraestructuras críticas. A) es inseguro; C) es solo complementario."
+        }
+    ];
+
+    let userSelections = new Array(20).fill(null);
+    let correctCount = 0;
+
+    function updateScore() {
+        document.getElementById('scoreDisplay').innerHTML = `🎯 Aciertos: ${correctCount} / 20`;
+    }
+
+    function recalcScore() {
+        let count = 0;
+        for (let i = 0; i < questions.length; i++) {
+            if (userSelections[i] === questions[i].correct) count++;
+        }
+        correctCount = count;
+        updateScore();
+    }
+
+    function showFeedback(index, selectedValue, feedbackDiv) {
+        const q = questions[index];
+        const isCorrect = (selectedValue === q.correct);
+        feedbackDiv.innerHTML = '';
+        feedbackDiv.classList.remove('correct', 'incorrect');
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'feedback-icon';
+        const messageSpan = document.createElement('span');
+        messageSpan.style.flex = '1';
+
+        if (isCorrect) {
+            feedbackDiv.classList.add('correct');
+            iconSpan.textContent = '✅';
+            messageSpan.innerHTML = `<strong>¡Correcto!</strong> ${q.explanation}`;
+        } else {
+            feedbackDiv.classList.add('incorrect');
+            iconSpan.textContent = '❌';
+            const correctOption = q.options.find(opt => opt.value === q.correct);
+            const correctText = correctOption ? correctOption.text : q.correct;
+            messageSpan.innerHTML = `<strong>Incorrecto.</strong> La respuesta correcta es: "${correctText}".<br>${q.explanation}`;
+        }
+        feedbackDiv.appendChild(iconSpan);
+        feedbackDiv.appendChild(messageSpan);
+    }
+
+    function createQuestionCard(index, q) {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `qcard-${index}`;
+
+        const qNumSpan = document.createElement('span');
+        qNumSpan.className = 'q-num';
+        qNumSpan.textContent = `Pregunta ${index+1}`;
+        const questionTextDiv = document.createElement('div');
+        questionTextDiv.className = 'question-text';
+        questionTextDiv.appendChild(qNumSpan);
+        questionTextDiv.appendChild(document.createTextNode(` ${q.text}`));
+        card.appendChild(questionTextDiv);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+
+        q.options.forEach(opt => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = `q${index}`;
+            radio.value = opt.value;
+            radio.id = `q${index}_${opt.value}`;
+
+            const label = document.createElement('label');
+            label.htmlFor = radio.id;
+            label.textContent = opt.text;
+
+            optionDiv.appendChild(radio);
+            optionDiv.appendChild(label);
+            optionsDiv.appendChild(optionDiv);
+
+            radio.addEventListener('change', (e) => {
+                userSelections[index] = e.target.value;
+                recalcScore();
+                const feedbackDiv = document.getElementById(`feedback-${index}`);
+                showFeedback(index, e.target.value, feedbackDiv);
+            });
+
+            if (userSelections[index] === opt.value) {
+                radio.checked = true;
+            }
+        });
+
+        card.appendChild(optionsDiv);
+
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'feedback';
+        feedbackDiv.id = `feedback-${index}`;
+        card.appendChild(feedbackDiv);
+
+        if (userSelections[index] !== null) {
+            showFeedback(index, userSelections[index], feedbackDiv);
+        }
+
+        return card;
+    }
+
+    function renderQuiz() {
+        const container = document.getElementById('quizContainer');
+        container.innerHTML = '';
+        questions.forEach((q, idx) => {
+            container.appendChild(createQuestionCard(idx, q));
+        });
+    }
+
+    function resetQuiz() {
+        userSelections = new Array(20).fill(null);
+        correctCount = 0;
+        updateScore();
+        renderQuiz();
+    }
+
+    function showFinalScore() {
+        alert(`📊 Resultado final:\nAciertos: ${correctCount} de 20\nPorcentaje: ${Math.round((correctCount/20)*100)}%\n\nRevisa las respuestas incorrectas para mejorar.`);
+    }
+
+    renderQuiz();
+    updateScore();
+
+    document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+    document.getElementById('finalScoreBtn').addEventListener('click', showFinalScore);
+</script>
+</body>
+</html>
